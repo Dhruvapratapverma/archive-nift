@@ -129,38 +129,39 @@ h1{font-size:clamp(46px,8vw,94px);line-height:.96;letter-spacing:-.075em;font-we
 }
 
 
-/* Persistent floating YouTube radio */
+/* Compact floating radio: YouTube video remains underneath a soft white glass overlay. */
 .radio-widget{
-  position:fixed;right:22px;bottom:22px;z-index:50;width:260px;
-  padding:12px;background:rgba(248,248,245,.88);
-  border:1px solid rgba(255,255,255,.72);border-radius:18px;
-  box-shadow:0 18px 55px rgba(0,0,0,.16);
-  backdrop-filter:blur(22px) saturate(155%);
-  -webkit-backdrop-filter:blur(22px) saturate(155%);
-  opacity:0;visibility:hidden;transform:translateY(18px) scale(.97);
-  transition:opacity .45s ease,transform .55s cubic-bezier(.2,.8,.2,1),visibility .45s;
+  position:fixed;right:22px;bottom:22px;z-index:50;width:218px;height:238px;
+  padding:8px;background:rgba(255,255,255,.94);
+  border:1px solid rgba(255,255,255,.9);border-radius:15px;
+  box-shadow:0 12px 38px rgba(0,0,0,.13);
+  backdrop-filter:blur(18px) saturate(140%);
+  -webkit-backdrop-filter:blur(18px) saturate(140%);
+  opacity:0;visibility:hidden;transform:translateY(14px) scale(.98);
+  transition:opacity .35s ease,transform .35s ease,visibility .35s;
+  touch-action:pan-y;
 }
 .radio-widget.visible{opacity:1;visibility:visible;transform:translateY(0) scale(1)}
-.radio-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
-.radio-label{font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);font-weight:700}
-.radio-live{font-size:8px;letter-spacing:.1em;color:#23845e}
-.radio-live:before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:#27ae70;margin-right:5px}
-.radio-frame{width:100%;height:200px;overflow:hidden;border-radius:10px;background:#e8e8e3}
+.radio-widget.dragging{transition:none;cursor:grabbing;user-select:none}
+.radio-top{height:24px;display:flex;align-items:center;justify-content:space-between;padding:0 4px 4px;cursor:grab;touch-action:none}
+.radio-widget.dragging .radio-top{cursor:grabbing}
+.radio-label{font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:#555;font-weight:700}
+.radio-live{font-size:7px;letter-spacing:.08em;color:#23845e}
+.radio-live:before{content:"";display:inline-block;width:5px;height:5px;border-radius:50%;background:#27ae70;margin-right:4px}
+.radio-frame{position:absolute;inset:32px 8px 8px;overflow:hidden;border-radius:9px;background:#eee;z-index:0}
 #radioPlayer{width:100%;height:200px}
 #radioPlayer iframe{width:100%;height:200px;border:0}
-.radio-controls{display:flex;align-items:center;justify-content:center;gap:13px;padding:10px 0 5px}
-.radio-control{width:31px;height:31px;border:1px solid var(--line);border-radius:50%;background:rgba(255,255,255,.8);color:var(--ink);cursor:pointer}
-.radio-control.main{width:38px;height:38px;background:var(--ink);color:white;border-color:var(--ink)}
-.radio-control:hover{transform:scale(1.06)}
-.radio-volume{display:flex;align-items:center;gap:9px;padding:3px 2px 2px}
-.radio-volume input{width:100%;accent-color:#171715}
-.radio-status{font-size:9px;line-height:1.5;color:var(--muted);min-height:14px;text-align:center}
+.radio-glass-overlay{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:11px;
+  background:rgba(255,255,255,.91);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px)}
+.radio-controls{display:flex;align-items:center;justify-content:center;gap:8px}
+.radio-control{min-width:54px;height:25px;padding:0 10px;border:1px solid rgba(20,20,20,.16);border-radius:999px;background:rgba(255,255,255,.88);color:#222;cursor:pointer;font-size:8px;letter-spacing:.06em;font-weight:650}
+.radio-control.main{min-width:66px;background:#171715;color:white;border-color:#171715}
+.radio-control:hover{transform:scale(1.035)}
+.radio-volume{width:132px;display:flex;align-items:center;gap:7px;color:#555;font-size:10px}
+.radio-volume input{width:100%;height:3px;accent-color:#171715;cursor:pointer}
+.radio-status{font-size:7px;line-height:1.35;color:#777;min-height:10px;text-align:center;max-width:165px}
 .radio-widget button{font:inherit}
-@media(max-width:520px){
-  .radio-widget{right:12px;bottom:12px;width:238px;padding:10px}
-  .radio-frame,#radioPlayer,#radioPlayer iframe{height:200px}
-}
-
+@media(max-width:520px){.radio-widget{right:12px;bottom:12px;width:208px;height:228px}}
 
 /* Soft overlapping entrance for content panels and welcome view */
 .welcome{animation:archiveFadeIn .55s cubic-bezier(.2,.75,.25,1) both}
@@ -239,22 +240,24 @@ h1{font-size:clamp(46px,8vw,94px);line-height:.96;letter-spacing:-.075em;font-we
 
 <!-- The radio is kept outside the page/section content so navigation never destroys it. -->
 <aside class="radio-widget" id="radioWidget" aria-label="Floating YouTube radio">
-  <div class="radio-top">
+  <div class="radio-top" id="radioDragHandle" title="Drag to move radio">
     <span class="radio-label">DPV / Radio</span>
     <span class="radio-live" id="radioLiveLabel">OFF AIR</span>
   </div>
   <div class="radio-frame">
     <div id="radioPlayer"></div>
+    <div class="radio-glass-overlay">
+      <div class="radio-controls">
+        <button class="radio-control main" id="radioOnAir" aria-label="Turn radio on">ON AIR</button>
+      </div>
+      <div class="radio-volume">
+        <span aria-hidden="true">−</span>
+        <input id="radioVolume" type="range" min="0" max="100" value="65" aria-label="Volume">
+        <span aria-hidden="true">+</span>
+      </div>
+      <div class="radio-status" id="radioStatus">Choose Simple or Complex to start the radio</div>
+    </div>
   </div>
-  <div class="radio-controls">
-    <button class="radio-control main" id="radioOnAir" aria-label="Turn radio on">ON AIR</button>
-  </div>
-  <div class="radio-volume">
-    <span aria-hidden="true">−</span>
-    <input id="radioVolume" type="range" min="0" max="100" value="65" aria-label="Volume">
-    <span aria-hidden="true">+</span>
-  </div>
-  <div class="radio-status" id="radioStatus">Choose Simple or Complex to start the radio</div>
 </aside>
 
 <script>
@@ -360,6 +363,36 @@ const radioStatus=document.getElementById("radioStatus");
 const radioOnAir=document.getElementById("radioOnAir");
 const radioLiveLabel=document.getElementById("radioLiveLabel");
 const radioVolume=document.getElementById("radioVolume");
+const radioDragHandle=document.getElementById("radioDragHandle");
+// Drag the compact radio by its title strip; works with mouse and touch.
+let radioDrag=null;
+radioDragHandle.addEventListener("pointerdown",e=>{
+  if(e.button!==undefined && e.button!==0) return;
+  const rect=radioWidget.getBoundingClientRect();
+  radioDrag={pointerId:e.pointerId,offsetX:e.clientX-rect.left,offsetY:e.clientY-rect.top};
+  radioWidget.style.left=rect.left+"px";
+  radioWidget.style.top=rect.top+"px";
+  radioWidget.style.right="auto";
+  radioWidget.style.bottom="auto";
+  radioWidget.classList.add("dragging");
+  radioDragHandle.setPointerCapture(e.pointerId);
+});
+radioDragHandle.addEventListener("pointermove",e=>{
+  if(!radioDrag || e.pointerId!==radioDrag.pointerId) return;
+  const maxLeft=Math.max(0,window.innerWidth-radioWidget.offsetWidth);
+  const maxTop=Math.max(0,window.innerHeight-radioWidget.offsetHeight);
+  const left=Math.min(maxLeft,Math.max(0,e.clientX-radioDrag.offsetX));
+  const top=Math.min(maxTop,Math.max(0,e.clientY-radioDrag.offsetY));
+  radioWidget.style.left=left+"px";
+  radioWidget.style.top=top+"px";
+});
+function stopRadioDrag(e){
+  if(!radioDrag || (e && e.pointerId!==radioDrag.pointerId)) return;
+  radioDrag=null;
+  radioWidget.classList.remove("dragging");
+}
+radioDragHandle.addEventListener("pointerup",stopRadioDrag);
+radioDragHandle.addEventListener("pointercancel",stopRadioDrag);
 let radioPlayer=null;
 let radioApiReady=false;
 let radioStarted=false;
