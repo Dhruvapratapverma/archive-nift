@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <title>Dhruv Pratap Verma — Work Archive</title>
 <style>
 :root{
@@ -240,15 +241,13 @@ h1{font-size:clamp(46px,8vw,94px);line-height:.96;letter-spacing:-.075em;font-we
 <aside class="radio-widget" id="radioWidget" aria-label="Floating YouTube radio">
   <div class="radio-top">
     <span class="radio-label">DPV / Radio</span>
-    <span class="radio-live">ON AIR</span>
+    <span class="radio-live" id="radioLiveLabel">OFF AIR</span>
   </div>
   <div class="radio-frame">
     <div id="radioPlayer"></div>
   </div>
   <div class="radio-controls">
-    <button class="radio-control" id="radioPrevious" aria-label="Previous track">‹</button>
-    <button class="radio-control main" id="radioPlayPause" aria-label="Play or pause">Ⅱ</button>
-    <button class="radio-control" id="radioNext" aria-label="Next track">›</button>
+    <button class="radio-control main" id="radioOnAir" aria-label="Turn radio on">ON AIR</button>
   </div>
   <div class="radio-volume">
     <span aria-hidden="true">−</span>
@@ -358,7 +357,8 @@ const YOUTUBE_PLAYLIST_ID = "PLFan7MlVtwxc";
 
 const radioWidget=document.getElementById("radioWidget");
 const radioStatus=document.getElementById("radioStatus");
-const radioPlayPause=document.getElementById("radioPlayPause");
+const radioOnAir=document.getElementById("radioOnAir");
+const radioLiveLabel=document.getElementById("radioLiveLabel");
 const radioVolume=document.getElementById("radioVolume");
 let radioPlayer=null;
 let radioApiReady=false;
@@ -366,7 +366,11 @@ let radioStarted=false;
 let radioIsPlaying=false;
 let chosenMode=null;
 let radioFadeTimer=null;
-let radioTargetVolume=50;
+let radioTargetVolume=65;
+let radioOn=false;
+let lastRandomIndex=-1;
+let firstRandomSeekPending=false;
+let randomTrackChangePending=false;
 
 function fadeRadioTo(target,duration=750){
   if(!radioPlayer || !radioApiReady) return;
@@ -397,7 +401,32 @@ function showSelectedMode(mode){
     constructionScreen.classList.remove("active");
   }
   radioWidget.classList.add("visible");
-  startRadioFromUserAction();
+}
+
+function chooseRandomIndex(){
+  const tracks=radioPlayer && radioApiReady ? radioPlayer.getPlaylist() : null;
+  const count=tracks && tracks.length ? tracks.length : 0;
+  if(!count) return 0;
+  let index=Math.floor(Math.random()*count);
+  if(count>1 && index===lastRandomIndex) index=(index+1+Math.floor(Math.random()*(count-1)))%count;
+  lastRandomIndex=index;
+  return index;
+}
+
+function startRandomTrack(){
+  if(!radioPlayer || !radioApiReady || !radioOn) return;
+  const tracks=radioPlayer.getPlaylist();
+  if(!tracks || !tracks.length){
+    radioPlayer.loadPlaylist({listType:"playlist",list:YOUTUBE_PLAYLIST_ID,index:0});
+    randomTrackChangePending=true;
+    setRadioStatus("Loading station playlist…");
+    return;
+  }
+  const index=chooseRandomIndex();
+  randomTrackChangePending=true;
+  firstRandomSeekPending=true;
+  radioPlayer.loadPlaylist({listType:"playlist",list:YOUTUBE_PLAYLIST_ID,index:index});
+  setRadioStatus("Tuning into a random track…");
 }
 
 function startRadioFromUserAction(){
@@ -405,14 +434,16 @@ function startRadioFromUserAction(){
     setRadioStatus("Add your YouTube playlist ID in the code");
     return;
   }
+  radioOn=true;
+  radioOnAir.textContent="OFF AIR";
+  radioOnAir.setAttribute("aria-label","Turn radio off");
+  radioLiveLabel.textContent="ON AIR";
+  radioLiveLabel.style.color="#23845e";
   if(!radioApiReady || !radioPlayer){
-    setRadioStatus("Radio is loading — press Play when ready");
+    setRadioStatus("Radio is connecting…");
     return;
   }
-  /* Called directly from the visitor's Simple/Complex click gesture. */
-  radioPlayer.playVideo();
-  radioStarted=true;
-  setRadioStatus("Connecting to your playlist…");
+  startRandomTrack();
 }
 
 document.getElementById("simpleButton").addEventListener("click",()=>{
@@ -440,40 +471,61 @@ function onYouTubeIframeAPIReady(){
       listType:"playlist",
       list:YOUTUBE_PLAYLIST_ID,
       autoplay:0,
-      controls:1,
+      controls:0,
       playsinline:1,
-      loop:1,
-      enablejsapi:1
+      loop:0,
+      disablekb:1,
+      fs:0,
+      enablejsapi:1,
+      origin: (location.protocol === "http:" || location.protocol === "https:") ? location.origin : undefined
     },
     events:{
       onReady:function(event){
         radioApiReady=true;
         radioTargetVolume=Number(radioVolume.value);
-        event.target.setVolume(0);
-        event.target.setLoop(true);
-        setRadioStatus("Ready · Select Simple or Complex to begin");
-        if(chosenMode && radioWidget.classList.contains("visible")){
-          event.target.playVideo();
-          radioStarted=true;
-        }
+        event.target.setVolume(radioTargetVolume);
+        event.target.setLoop(false);
+        // Track selection is randomized by our own station logic, not YouTube shuffle.
+        setRadioStatus("Ready · Turn ON AIR to listen");
+        if(radioOn) startRandomTrack();
       },
       onStateChange:function(event){
         if(event.data===YT.PlayerState.PLAYING){
-          fadeRadioTo(radioTargetVolume,900);
           radioIsPlaying=true;
-          radioPlayPause.textContent="Ⅱ";
-          setRadioStatus("Playing your playlist");
-        }else if(event.data===YT.PlayerState.PAUSED || event.data===YT.PlayerState.ENDED){
+          if(firstRandomSeekPending){
+            firstRandomSeekPending=false;
+            const duration=radioPlayer.getDuration()||0;
+            if(duration>20){
+              // Pick a random position, leaving the final 12 seconds for a natural ending.
+              const randomSeconds=Math.floor(Math.random()*Math.max(1,duration-12));
+              radioPlayer.seekTo(randomSeconds,true);
+            }
+          }
+          fadeRadioTo(radioTargetVolume,1100);
+          setRadioStatus("ON AIR · Random selection");
+        }else if(event.data===YT.PlayerState.PAUSED){
           radioIsPlaying=false;
-          radioPlayPause.textContent="▶";
-          if(event.data===YT.PlayerState.ENDED) setRadioStatus("Playlist ended");
+          setRadioStatus("OFF AIR");
+        }else if(event.data===YT.PlayerState.ENDED){
+          radioIsPlaying=false;
+          if(radioOn){
+            setRadioStatus("Selecting another track…");
+            startRandomTrack();
+          }
         }else if(event.data===YT.PlayerState.BUFFERING){
-          fadeRadioTo(0,500);
-          setRadioStatus("Buffering…");
+          setRadioStatus("Tuning…");
         }
       },
-      onError:function(){
-        setRadioStatus("This video or playlist cannot be embedded");
+      onError:function(event){
+        if(event.data===153){
+          setRadioStatus("YouTube needs this page served from localhost or HTTPS");
+        }else if(event.data===101 || event.data===150){
+          setRadioStatus("A playlist video does not allow embedding");
+        }else if(event.data===100){
+          setRadioStatus("A playlist video is private or unavailable");
+        }else{
+          setRadioStatus("YouTube player error: "+event.data);
+        }
       }
     }
   });
@@ -483,23 +535,26 @@ const ytApiScript=document.createElement("script");
 ytApiScript.src="https://www.youtube.com/iframe_api";
 document.head.appendChild(ytApiScript);
 
-radioPlayPause.addEventListener("click",()=>{
-  if(!radioPlayer || !radioApiReady){
-    setRadioStatus("Radio is not ready yet");
-    return;
-  }
-  if(radioIsPlaying){
-    radioPlayer.pauseVideo();
+radioOnAir.addEventListener("click",()=>{
+  if(!radioOn){
+    radioOn=true;
+    radioOnAir.textContent="OFF AIR";
+    radioOnAir.setAttribute("aria-label","Turn radio off");
+    radioLiveLabel.textContent="ON AIR";
+    radioLiveLabel.style.color="#23845e";
+    if(radioApiReady) startRandomTrack();
+    else setRadioStatus("Connecting to DPV Radio…");
   }else{
-    radioPlayer.playVideo();
+    radioOn=false;
+    if(radioPlayer && radioApiReady){radioPlayer.pauseVideo();fadeRadioTo(0,250);}
+    radioOnAir.textContent="ON AIR";
+    radioOnAir.setAttribute("aria-label","Turn radio on");
+    radioLiveLabel.textContent="OFF AIR";
+    radioLiveLabel.style.color="var(--muted)";
+    setRadioStatus("OFF AIR");
   }
 });
-document.getElementById("radioPrevious").addEventListener("click",()=>{
-  if(radioPlayer && radioApiReady) radioPlayer.previousVideo();
-});
-document.getElementById("radioNext").addEventListener("click",()=>{
-  if(radioPlayer && radioApiReady) radioPlayer.nextVideo();
-});
+
 radioVolume.addEventListener("input",()=>{
   radioTargetVolume=Number(radioVolume.value);
   if(radioPlayer && radioApiReady) radioPlayer.setVolume(radioTargetVolume);
