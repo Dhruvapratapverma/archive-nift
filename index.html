@@ -371,6 +371,7 @@ let radioOn=false;
 let lastRandomIndex=-1;
 let firstRandomSeekPending=false;
 let randomTrackChangePending=false;
+let randomSeekTimer=null;
 
 function fadeRadioTo(target,duration=750){
   if(!radioPlayer || !radioApiReady) return;
@@ -401,6 +402,14 @@ function showSelectedMode(mode){
     constructionScreen.classList.remove("active");
   }
   radioWidget.classList.add("visible");
+  // Selecting a site mode also starts the radio; there is no extra ON AIR step.
+  radioOn=true;
+  radioOnAir.textContent="OFF AIR";
+  radioOnAir.setAttribute("aria-label","Turn radio off");
+  radioLiveLabel.textContent="ON AIR";
+  radioLiveLabel.style.color="#23845e";
+  if(radioApiReady && radioPlayer) startRandomTrack();
+  else setRadioStatus("Starting DPV Radio…");
 }
 
 function chooseRandomIndex(){
@@ -486,20 +495,34 @@ function onYouTubeIframeAPIReady(){
         event.target.setVolume(radioTargetVolume);
         event.target.setLoop(false);
         // Track selection is randomized by our own station logic, not YouTube shuffle.
-        setRadioStatus("Ready · Turn ON AIR to listen");
-        if(radioOn) startRandomTrack();
+        setRadioStatus("Starting DPV Radio…");
+        if(radioOn || chosenMode!==null) {
+          radioOn=true;
+          startRandomTrack();
+        }
       },
       onStateChange:function(event){
         if(event.data===YT.PlayerState.PLAYING){
           radioIsPlaying=true;
-          if(firstRandomSeekPending){
-            firstRandomSeekPending=false;
-            const duration=radioPlayer.getDuration()||0;
-            if(duration>20){
-              // Pick a random position, leaving the final 12 seconds for a natural ending.
-              const randomSeconds=Math.floor(Math.random()*Math.max(1,duration-12));
-              radioPlayer.seekTo(randomSeconds,true);
-            }
+          if(firstRandomSeekPending && !randomSeekTimer){
+            // Wait briefly for YouTube to report the duration, then choose a fresh
+            // random start position for THIS track (not just the first track).
+            let attempts=0;
+            randomSeekTimer=setInterval(()=>{
+              attempts++;
+              const duration=radioPlayer.getDuration()||0;
+              if(duration>20){
+                clearInterval(randomSeekTimer);
+                randomSeekTimer=null;
+                firstRandomSeekPending=false;
+                const randomSeconds=Math.floor(Math.random()*Math.max(1,duration-12));
+                radioPlayer.seekTo(randomSeconds,true);
+              }else if(attempts>=20){
+                clearInterval(randomSeekTimer);
+                randomSeekTimer=null;
+                firstRandomSeekPending=false;
+              }
+            },250);
           }
           fadeRadioTo(radioTargetVolume,1100);
           setRadioStatus("ON AIR · Random selection");
