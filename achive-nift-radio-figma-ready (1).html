@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dhruv Pratap Verma — Work Archive</title>
+<style>
+:root{
+  --bg:#f6f6f3;--paper:#fff;--ink:#171715;--muted:#777770;--line:#e4e4df;
+  --soft:#f0f0eb;--accent:#d5ff68;--sidebar:252px;
+}
+.liquid-chrome {
+  background:
+    radial-gradient(
+      ellipse at 25% 20%,
+      white 0%, transparent 35%
+    ),
+    radial-gradient(
+      ellipse at 75% 75%,
+      #777 0%, transparent 40%
+    ),
+    linear-gradient(
+      135deg,
+      #fff, #777, #eee, #444, #fff
+    );
+  background-size: 160% 160%;
+  animation: liquid 7s ease-in-out infinite alternate;
+}
+
+@keyframes liquid {
+  to { background-position: 100% 100%; }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+button{font:inherit}
+
+/* Initial mode selection */
+.entry-screen{position:fixed;inset:0;z-index:30;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:24px;transition:opacity .45s ease,visibility .45s ease}
+.entry-screen.hidden{opacity:0;visibility:hidden;pointer-events:none}
+.entry-inner{width:min(760px,100%);text-align:center}
+.entry-eyebrow{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.entry-title{font-size:clamp(42px,8vw,82px);line-height:.98;letter-spacing:-.075em;font-weight:550;margin:22px 0 14px}
+.entry-description{font-size:13px;line-height:1.8;color:var(--muted);margin:0 auto;max-width:420px}
+.entry-actions{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-top:38px}
+.entry-button{min-width:150px;border:1px solid var(--ink);border-radius:999px;padding:14px 25px;background:var(--ink);color:white;cursor:pointer;transition:transform .2s,background .2s,color .2s}
+.entry-button:hover{transform:translateY(-3px);background:var(--accent);color:var(--ink);border-color:var(--accent)}
+.entry-button.secondary{background:transparent;color:var(--ink)}
+.entry-button.secondary:hover{background:var(--ink);color:white;border-color:var(--ink)}
+.entry-foot{margin-top:55px;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.construction-screen{position:fixed;inset:0;z-index:29;background:var(--bg);display:none;align-items:center;justify-content:center;padding:24px}
+.construction-screen.active{display:flex}
+.construction-inner{width:min(620px,100%);text-align:center}
+.construction-inner h2{font-size:clamp(42px,8vw,76px);line-height:.98;letter-spacing:-.075em;font-weight:550;margin:22px 0}
+.construction-inner p{font-size:13px;line-height:1.8;color:var(--muted)}
+.back-button{margin-top:28px;border:1px solid var(--ink);border-radius:999px;padding:13px 21px;background:var(--ink);color:#fff;cursor:pointer;transition:.2s}
+.back-button:hover{background:var(--accent);color:var(--ink);border-color:var(--accent)}
+.page{width:min(1120px,calc(100% - 48px));margin:auto}
+.topbar{height:70px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.brand{font-weight:750;color:var(--ink);letter-spacing:.05em}
+.hero{min-height:68vh;display:flex;flex-direction:column;justify-content:center;padding:75px 0}
+.eyebrow,.kicker{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+h1{font-size:clamp(46px,8vw,94px);line-height:.96;letter-spacing:-.075em;font-weight:550;margin:24px 0 0}
+.status{margin-top:27px;color:var(--muted);font-size:13px;line-height:1.8}
+.status strong{color:var(--ink);font-weight:600}
+.primary{margin-top:42px;width:max-content;background:var(--ink);color:#fff;border:1px solid var(--ink);border-radius:999px;padding:14px 21px;display:flex;gap:35px;align-items:center;cursor:pointer;transition:.2s}
+.primary:hover{background:var(--accent);color:var(--ink);border-color:var(--accent);transform:translateY(-2px)}
+.footer{border-top:1px solid var(--line);padding:20px 0 28px;display:flex;justify-content:space-between;color:var(--muted);font-size:10px;letter-spacing:.1em;text-transform:uppercase}
+
+/* Full-screen work overlay: subject selector becomes the left navigation. */
+.overlay{position:fixed;inset:0;z-index:10;background:rgba(18,18,16,.42);backdrop-filter:blur(7px);display:none;padding:22px}
+.overlay.open{display:flex}
+.shell{width:100%;height:100%;max-width:1600px;margin:auto;background:var(--bg);border:1px solid rgba(255,255,255,.5);border-radius:16px;overflow:hidden;display:grid;grid-template-columns:var(--sidebar) minmax(0,1fr);box-shadow:0 24px 90px rgba(0,0,0,.2);animation:enter .2s ease}
+@keyframes enter{from{opacity:0;transform:translateY(8px) scale(.995)}to{opacity:1;transform:none}}
+.sidebar{background:#fff;border-right:1px solid var(--line);display:flex;flex-direction:column;min-width:0}
+.side-head{padding:22px 18px 17px;border-bottom:1px solid var(--line)}
+.side-brand{font-size:10px;letter-spacing:.14em;text-transform:uppercase;font-weight:700}
+.side-caption{font-size:11px;color:var(--muted);margin-top:7px;line-height:1.5}
+.subject-nav{padding:12px 10px;overflow-y:auto;flex:1}
+.nav-label{font-size:9px;letter-spacing:.15em;color:#99998f;text-transform:uppercase;padding:8px 9px 10px}
+.nav-item{width:100%;border:0;background:transparent;border-radius:7px;padding:10px 9px;display:flex;align-items:flex-start;gap:10px;text-align:left;cursor:pointer;color:var(--ink);margin:2px 0}
+.nav-item:hover{background:var(--soft)}
+.nav-item.active{background:var(--ink);color:white}
+.nav-num{font-size:9px;color:#99998f;min-width:18px;padding-top:2px}
+.nav-item.active .nav-num{color:#c9c9c1}
+.nav-name{font-size:11px;line-height:1.4}
+.side-foot{padding:13px 17px;border-top:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:8px}
+.side-foot span{font-size:9px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+.close-overlay{border:1px solid var(--line);background:white;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:18px;line-height:1}
+.close-overlay:hover{background:var(--soft)}
+.main{min-width:0;display:flex;flex-direction:column;overflow:hidden}
+.main-head{height:62px;flex:none;padding:0 25px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:15px;background:rgba(255,255,255,.6)}
+.main-head-title{font-size:10px;text-transform:uppercase;letter-spacing:.13em;color:var(--muted)}
+.main-head-right{font-size:10px;color:var(--muted)}
+.content-scroll{overflow:auto;padding:24px;flex:1}
+.welcome{min-height:100%;display:flex;flex-direction:column;justify-content:center;max-width:600px;padding:30px}
+.welcome h2{font-size:clamp(30px,5vw,58px);letter-spacing:-.065em;line-height:1.02;font-weight:550;margin:18px 0}
+.welcome p{font-size:13px;line-height:1.8;color:var(--muted);max-width:440px}
+.welcome-note{margin-top:28px;padding-top:15px;border-top:1px solid var(--line);font-size:10px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+.panels-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,440px),1fr));gap:14px;align-items:stretch}
+.content-panel{background:#fff;border:1px solid var(--line);border-radius:11px;min-width:0;animation:enter .18s ease}
+.panel-head{padding:17px 18px 15px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.panel-index{font-size:9px;color:var(--muted);letter-spacing:.13em;text-transform:uppercase}
+.panel-title{font-size:clamp(18px,2.2vw,25px);letter-spacing:-.05em;font-weight:550;margin:8px 0 5px}
+.panel-subtitle{font-size:11px;color:var(--muted);line-height:1.6}
+.panel-close{border:0;background:transparent;color:#888;font-size:21px;cursor:pointer;padding:0 2px;line-height:1}
+.panel-close:hover{color:#111}
+.panel-body{padding:17px 18px 19px;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:18px;align-items:start}
+.section{margin:0;min-width:0}
+.section:last-child{margin-bottom:0}
+.section h3{font-size:9px;letter-spacing:.14em;text-transform:uppercase;margin:0 0 8px;font-weight:700}
+.section p{font-size:11px;color:#66665f;line-height:1.75;margin:0}
+.placeholder{margin-top:10px;min-height:72px;border:1px dashed #d8d8d1;border-radius:7px;display:flex;align-items:center;justify-content:center;text-align:center;padding:12px;color:#99998f;font-size:10px;line-height:1.6}
+.empty-state{color:var(--muted);font-size:12px;padding:18px}
+@media(max-width:760px){
+  .overlay{padding:0}
+  .shell{border-radius:0;grid-template-columns:185px minmax(0,1fr);height:100%;border:0}
+  .side-head{padding:17px 12px 13px}.side-caption{font-size:10px}
+  .subject-nav{padding:9px 7px}.nav-item{padding:9px 7px;gap:6px}.nav-name{font-size:10px}
+  .side-foot{padding:10px}.side-foot span{font-size:8px}
+  .main-head{height:54px;padding:0 13px}.content-scroll{padding:13px}
+  .panels-grid{grid-template-columns:1fr}.panel-body{grid-template-columns:1fr}.welcome{padding:18px}
+}
+@media(max-width:420px){
+  .shell{grid-template-columns:145px minmax(0,1fr)}
+  .nav-name{font-size:9px}.nav-num{min-width:15px}
+  .side-head{padding:14px 9px}.side-foot{padding:8px}
+  .panel-head{padding:13px}.panel-body{padding:13px}
+}
+
+
+/* Persistent floating YouTube radio */
+.radio-widget{
+  position:fixed;right:22px;bottom:22px;z-index:50;width:260px;
+  padding:12px;background:rgba(248,248,245,.88);
+  border:1px solid rgba(255,255,255,.72);border-radius:18px;
+  box-shadow:0 18px 55px rgba(0,0,0,.16);
+  backdrop-filter:blur(22px) saturate(155%);
+  -webkit-backdrop-filter:blur(22px) saturate(155%);
+  opacity:0;visibility:hidden;transform:translateY(18px) scale(.97);
+  transition:opacity .45s ease,transform .55s cubic-bezier(.2,.8,.2,1),visibility .45s;
+}
+.radio-widget.visible{opacity:1;visibility:visible;transform:translateY(0) scale(1)}
+.radio-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
+.radio-label{font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.radio-live{font-size:8px;letter-spacing:.1em;color:#23845e}
+.radio-live:before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:#27ae70;margin-right:5px}
+.radio-frame{width:100%;height:200px;overflow:hidden;border-radius:10px;background:#e8e8e3}
+#radioPlayer{width:100%;height:200px}
+#radioPlayer iframe{width:100%;height:200px;border:0}
+.radio-controls{display:flex;align-items:center;justify-content:center;gap:13px;padding:10px 0 5px}
+.radio-control{width:31px;height:31px;border:1px solid var(--line);border-radius:50%;background:rgba(255,255,255,.8);color:var(--ink);cursor:pointer}
+.radio-control.main{width:38px;height:38px;background:var(--ink);color:white;border-color:var(--ink)}
+.radio-control:hover{transform:scale(1.06)}
+.radio-volume{display:flex;align-items:center;gap:9px;padding:3px 2px 2px}
+.radio-volume input{width:100%;accent-color:#171715}
+.radio-status{font-size:9px;line-height:1.5;color:var(--muted);min-height:14px;text-align:center}
+.radio-widget button{font:inherit}
+@media(max-width:520px){
+  .radio-widget{right:12px;bottom:12px;width:238px;padding:10px}
+  .radio-frame,#radioPlayer,#radioPlayer iframe{height:200px}
+}
+
+
+/* Soft overlapping entrance for content panels and welcome view */
+.welcome{animation:archiveFadeIn .55s cubic-bezier(.2,.75,.25,1) both}
+.content-panel{animation:archiveFadeIn .55s cubic-bezier(.2,.75,.25,1) both}
+@keyframes archiveFadeIn{
+  from{opacity:0;transform:translateY(12px) scale(.99);filter:blur(4px)}
+  to{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+}
+
+</style>
+</head>
+<body>
+<div class="entry-screen" id="entryScreen">
+  <div class="entry-inner">
+    <div class="entry-eyebrow">DPV / Archive · Choose an experience</div>
+    <h1 class="entry-title">How would you<br>like to explore?</h1>
+    <p class="entry-description">Choose a version of the archive to continue.</p>
+    <div class="entry-actions">
+      <button class="entry-button" id="simpleButton">Simple <span aria-hidden="true">↗</span></button>
+      <button class="entry-button secondary" id="complexButton">Complex <span aria-hidden="true">↗</span></button>
+    </div>
+    <div class="entry-foot">Personal documentation · 2026</div>
+  </div>
+</div>
+
+<div class="construction-screen" id="constructionScreen">
+  <div class="construction-inner">
+    <div class="entry-eyebrow">DPV / Archive · Complex</div>
+    <h2>Under<br>construction.</h2>
+    <p>This version is currently being developed. Please check back later.</p>
+    <button class="back-button" id="backButton">← Back</button>
+  </div>
+</div>
+
+<main class="page" id="simplePage">
+  <header class="topbar"><div class="brand">DPV / Archive</div><div>Personal documentation · 2026</div></header>
+  <section class="hero">
+    <div class="eyebrow">A record of learning, making &amp; observation</div>
+    <h1>Dhruva Pratap<br>Verma.</h1>
+    <div class="status"><strong>Currently:</strong> Foundation Program<br><strong>Group:</strong> 3 &nbsp;·&nbsp; <strong>Semester:</strong> 1</div>
+    <button class="primary" id="openWorks"><span>Works</span><span>↗</span></button>
+  </section>
+  <footer class="footer"><span>#code: cpdn</span><span>^8912</span></footer>
+</main>
+
+<div class="overlay" id="worksOverlay" role="dialog" aria-modal="true" aria-label="Works documentation">
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="side-head">
+        <div class="side-brand">Works / Index</div>
+        <div class="side-caption">Foundation Program<br>Group 3 · Semester 1</div>
+      </div>
+      <nav class="subject-nav" id="subjectNav">
+        <div class="nav-label">Subjects · Select to open</div>
+      </nav>
+      <div class="side-foot"><span id="openCount">0 subjects open</span><button class="close-overlay" id="closeWorks" aria-label="Close works">×</button></div>
+    </aside>
+    <section class="main">
+      <header class="main-head">
+        <div class="main-head-title" id="mainHeading">Documentation workspace</div>
+        <div class="main-head-right">Select subjects from the left</div>
+      </header>
+      <div class="content-scroll" id="contentScroll">
+        <div class="welcome" id="welcome">
+          <div class="kicker">Foundation / Semester 01</div>
+          <h2>Explore the work.<br>One subject at a time.</h2>
+          <p>Choose a subject from the navigation on the left. Its documentation opens here. Open another subject to add its content as another panel; close any panel independently.</p>
+          <div class="welcome-note">The subject list stays in place as your navigation</div>
+        </div>
+        <div class="panels-grid" id="panelsGrid"></div>
+      </div>
+    </section>
+  </div>
+</div>
+
+
+<!-- The radio is kept outside the page/section content so navigation never destroys it. -->
+<aside class="radio-widget" id="radioWidget" aria-label="Floating YouTube radio">
+  <div class="radio-top">
+    <span class="radio-label">DPV / Radio</span>
+    <span class="radio-live">ON AIR</span>
+  </div>
+  <div class="radio-frame">
+    <div id="radioPlayer"></div>
+  </div>
+  <div class="radio-controls">
+    <button class="radio-control" id="radioPrevious" aria-label="Previous track">‹</button>
+    <button class="radio-control main" id="radioPlayPause" aria-label="Play or pause">Ⅱ</button>
+    <button class="radio-control" id="radioNext" aria-label="Next track">›</button>
+  </div>
+  <div class="radio-volume">
+    <span aria-hidden="true">−</span>
+    <input id="radioVolume" type="range" min="0" max="100" value="65" aria-label="Volume">
+    <span aria-hidden="true">+</span>
+  </div>
+  <div class="radio-status" id="radioStatus">Choose Simple or Complex to start the radio</div>
+</aside>
+
+<script>
+// Replace the sample section text and placeholders with your actual semester documentation.
+const subjects = [
+ {id:1,name:"Yarn",subtitle:"Yarn studies, construction and experimentation",sections:[
+  ["Overview","Document the brief, purpose and questions explored in this subject."],
+  ["Process & Experiments","Add yarn types, twist, ply, thickness, structure, samples and process observations."],
+  ["Outcomes & Reflection","Add final samples, photographs, what worked, what changed and what you learned."]
+ ]},
+ {id:2,name:"Metal",subtitle:"Metal properties, processes and material exploration",sections:[
+  ["Overview","Introduce the exercise, material and intended investigation."],
+  ["Material & Process","Document metal types, properties, tools, forming or joining processes, and safety notes."],
+  ["Experiments & Outcomes","Add process photographs, test pieces, results and reflections."]
+ ]},
+ {id:3,name:"Paper",subtitle:"Paper properties, construction and transformation",sections:[
+  ["Overview","Describe the paper exercise and the visual or structural question."],
+  ["Exploration","Document paper types, weight, grain, folding, cutting, joining and surface experiments."],
+  ["Final Work & Reflection","Add photographs, drawings, outcomes and learning."]
+ ]},
+ {id:4,name:"DDC — Digital Design Communication",subtitle:"Digital tools, visual communication and media",sections:[
+  ["Overview","Introduce the communication task, audience and intended message."],
+  ["Tools & Development","Document software, methods, iterations, layouts, typography, image-making and digital process."],
+  ["Output & Reflection","Add final screens, exports, prototypes, links and reflections."]
+ ]},
+ {id:5,name:"Self and Society",subtitle:"Personal reflection, people, culture and society",sections:[
+  ["Themes & Questions","Record the themes, questions and topics discussed in class."],
+  ["Observations & Research","Add observations, references, discussions, readings and examples."],
+  ["Reflection","Write your perspective, changes in understanding and conclusions."]
+ ]},
+ {id:6,name:"Design Fundamentals",subtitle:"Principles, visual language and design thinking",sections:[
+  ["Concepts","Document the principles, terms and design problems introduced."],
+  ["Exercises & Analysis","Add compositions, studies, experiments, visual analysis and iterations."],
+  ["Outcomes & Reflection","Show final exercises and explain the decisions behind them."]
+ ]},
+ {id:7,name:"Geometry",subtitle:"Geometric systems, form, proportion and spatial logic",sections:[
+  ["Concepts & Construction","Document geometric concepts, rules, measurements and construction methods."],
+  ["Studies & Applications","Add diagrams, patterns, grids, forms, proportions and analysis."],
+  ["Outcomes & Reflection","Add final drawings, models or studies and your observations."]
+ ]},
+ {id:8,name:"Fashion Basics",subtitle:"Introduction to fashion, garments and the body",sections:[
+  ["Concepts","Record terminology, garment components, silhouettes and foundational concepts."],
+  ["Studies & Exercises","Add garment studies, details, material observations, drawings and exercises."],
+  ["Outcomes & Reflection","Add completed work, process and reflections."]
+ ]},
+ {id:9,name:"General Electives — Indian Art, Architecture & Culture",subtitle:"Indian art, architecture, history and cultural context",sections:[
+  ["Topics & Timeline","Document periods, places, traditions, movements and key historical context."],
+  ["Visual & Architectural Studies","Add artwork, buildings, objects, motifs, geometry, materials and visual analysis."],
+  ["References & Reflection","Add sources, class notes, comparisons and your interpretations."]
+ ]},
+ {id:10,name:"Visual Representation",subtitle:"Drawing, observation and communicating ideas visually",sections:[
+  ["Brief & Intent","Describe what needs to be observed or represented."],
+  ["Studies & Development","Add sketches, perspective, proportion, rendering, diagrams and iterations."],
+  ["Final Representation","Add final drawings or visual outputs with a short reflection."]
+ ]}
+];
+
+const overlay=document.getElementById("worksOverlay");
+const nav=document.getElementById("subjectNav");
+const grid=document.getElementById("panelsGrid");
+const welcome=document.getElementById("welcome");
+const count=document.getElementById("openCount");
+const heading=document.getElementById("mainHeading");
+const opened=new Set();
+
+function renderNav(){
+  nav.innerHTML='<div class="nav-label">Subjects · Select to open</div>'+subjects.map(s=>`
+    <button class="nav-item ${opened.has(s.id)?"active":""}" data-open="${s.id}" aria-pressed="${opened.has(s.id)}">
+      <span class="nav-num">${String(s.id).padStart(2,"0")}</span><span class="nav-name">${s.name}</span>
+    </button>`).join("");
+  count.textContent=`${opened.size} ${opened.size===1?"subject":"subjects"} open`;
+}
+function renderPanels(){
+  const selected=subjects.filter(s=>opened.has(s.id));
+  welcome.style.display=selected.length?"none":"flex";
+  heading.textContent=selected.length?`${selected.length} subject${selected.length===1?"":"s"} · Documentation`:"Documentation workspace";
+  grid.innerHTML=selected.map(s=>`
+    <article class="content-panel">
+      <div class="panel-head">
+        <div><div class="panel-index">Subject ${String(s.id).padStart(2,"0")}</div><h2 class="panel-title">${s.name}</h2><div class="panel-subtitle">${s.subtitle}</div></div>
+        <button class="panel-close" data-close="${s.id}" aria-label="Close ${s.name}">×</button>
+      </div>
+      <div class="panel-body">
+        ${s.sections.map((section,i)=>`
+          <section class="section">
+            <h3>${String(i+1).padStart(2,"0")} / ${section[0]}</h3>
+            <p>${section[1]}</p>
+            <div class="placeholder">Add your ${section[0].toLowerCase()} notes, images, sketches,<br>diagrams, samples or project files here.</div>
+          </section>`).join("")}
+      </div>
+    </article>`).join("");
+}
+const entryScreen=document.getElementById("entryScreen");
+const constructionScreen=document.getElementById("constructionScreen");
+
+/* Paste the ID from your YouTube playlist URL here.
+   Example URL: https://www.youtube.com/playlist?list=PLxxxxxxxx
+   The playlist ID is the value after "list=". */
+const YOUTUBE_PLAYLIST_ID = "PLFan7MlVtwxc";
+
+const radioWidget=document.getElementById("radioWidget");
+const radioStatus=document.getElementById("radioStatus");
+const radioPlayPause=document.getElementById("radioPlayPause");
+const radioVolume=document.getElementById("radioVolume");
+let radioPlayer=null;
+let radioApiReady=false;
+let radioStarted=false;
+let radioIsPlaying=false;
+let chosenMode=null;
+let radioFadeTimer=null;
+let radioTargetVolume=50;
+
+function fadeRadioTo(target,duration=750){
+  if(!radioPlayer || !radioApiReady) return;
+  if(radioFadeTimer) clearInterval(radioFadeTimer);
+  const start=radioPlayer.getVolume();
+  const began=performance.now();
+  radioFadeTimer=setInterval(()=>{
+    const progress=Math.min(1,(performance.now()-began)/duration);
+    const eased=progress*progress*(3-2*progress);
+    radioPlayer.setVolume(Math.round(start+(target-start)*eased));
+    if(progress>=1){
+      clearInterval(radioFadeTimer);
+      radioFadeTimer=null;
+    }
+  },40);
+}
+
+function setRadioStatus(message){
+  radioStatus.textContent=message;
+}
+
+function showSelectedMode(mode){
+  chosenMode=mode;
+  entryScreen.classList.add("hidden");
+  if(mode==="complex"){
+    constructionScreen.classList.add("active");
+  }else{
+    constructionScreen.classList.remove("active");
+  }
+  radioWidget.classList.add("visible");
+  startRadioFromUserAction();
+}
+
+function startRadioFromUserAction(){
+  if(YOUTUBE_PLAYLIST_ID==="PASTE_YOUR_YOUTUBE_PLAYLIST_ID_HERE" || !YOUTUBE_PLAYLIST_ID.trim()){
+    setRadioStatus("Add your YouTube playlist ID in the code");
+    return;
+  }
+  if(!radioApiReady || !radioPlayer){
+    setRadioStatus("Radio is loading — press Play when ready");
+    return;
+  }
+  /* Called directly from the visitor's Simple/Complex click gesture. */
+  radioPlayer.playVideo();
+  radioStarted=true;
+  setRadioStatus("Connecting to your playlist…");
+}
+
+document.getElementById("simpleButton").addEventListener("click",()=>{
+  showSelectedMode("simple");
+});
+document.getElementById("complexButton").addEventListener("click",()=>{
+  showSelectedMode("complex");
+});
+document.getElementById("backButton").addEventListener("click",()=>{
+  constructionScreen.classList.remove("active");
+  entryScreen.classList.remove("hidden");
+  /* Radio deliberately remains visible and keeps playing. */
+});
+
+/* YouTube IFrame Player API: one persistent player for the entire site. */
+function onYouTubeIframeAPIReady(){
+  if(YOUTUBE_PLAYLIST_ID==="PASTE_YOUR_YOUTUBE_PLAYLIST_ID_HERE" || !YOUTUBE_PLAYLIST_ID.trim()){
+    setRadioStatus("Add your YouTube playlist ID in the code");
+    return;
+  }
+  radioPlayer=new YT.Player("radioPlayer",{
+    width:"236",
+    height:"200",
+    playerVars:{
+      listType:"playlist",
+      list:YOUTUBE_PLAYLIST_ID,
+      autoplay:0,
+      controls:1,
+      playsinline:1,
+      loop:1,
+      enablejsapi:1
+    },
+    events:{
+      onReady:function(event){
+        radioApiReady=true;
+        radioTargetVolume=Number(radioVolume.value);
+        event.target.setVolume(0);
+        event.target.setLoop(true);
+        setRadioStatus("Ready · Select Simple or Complex to begin");
+        if(chosenMode && radioWidget.classList.contains("visible")){
+          event.target.playVideo();
+          radioStarted=true;
+        }
+      },
+      onStateChange:function(event){
+        if(event.data===YT.PlayerState.PLAYING){
+          fadeRadioTo(radioTargetVolume,900);
+          radioIsPlaying=true;
+          radioPlayPause.textContent="Ⅱ";
+          setRadioStatus("Playing your playlist");
+        }else if(event.data===YT.PlayerState.PAUSED || event.data===YT.PlayerState.ENDED){
+          radioIsPlaying=false;
+          radioPlayPause.textContent="▶";
+          if(event.data===YT.PlayerState.ENDED) setRadioStatus("Playlist ended");
+        }else if(event.data===YT.PlayerState.BUFFERING){
+          fadeRadioTo(0,500);
+          setRadioStatus("Buffering…");
+        }
+      },
+      onError:function(){
+        setRadioStatus("This video or playlist cannot be embedded");
+      }
+    }
+  });
+}
+
+const ytApiScript=document.createElement("script");
+ytApiScript.src="https://www.youtube.com/iframe_api";
+document.head.appendChild(ytApiScript);
+
+radioPlayPause.addEventListener("click",()=>{
+  if(!radioPlayer || !radioApiReady){
+    setRadioStatus("Radio is not ready yet");
+    return;
+  }
+  if(radioIsPlaying){
+    radioPlayer.pauseVideo();
+  }else{
+    radioPlayer.playVideo();
+  }
+});
+document.getElementById("radioPrevious").addEventListener("click",()=>{
+  if(radioPlayer && radioApiReady) radioPlayer.previousVideo();
+});
+document.getElementById("radioNext").addEventListener("click",()=>{
+  if(radioPlayer && radioApiReady) radioPlayer.nextVideo();
+});
+radioVolume.addEventListener("input",()=>{
+  radioTargetVolume=Number(radioVolume.value);
+  if(radioPlayer && radioApiReady) radioPlayer.setVolume(radioTargetVolume);
+});
+
+document.getElementById("openWorks").addEventListener("click",()=>{overlay.classList.add("open");renderNav();renderPanels();});
+document.getElementById("closeWorks").addEventListener("click",()=>overlay.classList.remove("open"));
+overlay.addEventListener("click",e=>{if(e.target===overlay)overlay.classList.remove("open");});
+nav.addEventListener("click",e=>{
+  const b=e.target.closest("[data-open]");if(!b)return;
+  const id=Number(b.dataset.open);
+  if(opened.has(id)) opened.delete(id); else opened.add(id);
+  renderNav();renderPanels();
+});
+grid.addEventListener("click",e=>{
+  const b=e.target.closest("[data-close]");if(!b)return;
+  opened.delete(Number(b.dataset.close));renderNav();renderPanels();
+});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")overlay.classList.remove("open");});
+</script>
+</body>
+</html>
